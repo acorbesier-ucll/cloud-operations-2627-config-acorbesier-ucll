@@ -3,7 +3,7 @@
 Desired state of Lab Queue on my cluster (`labqueue.113.co.ucll.cloud`). Argo CD pulls from this
 repository. Nobody runs `kubectl apply` for the app any more. App code and CI live in
 [`cloud-operations-2627-homework-week-2-acorbesier-ucll`](https://github.com/Cloud-Operations-UCLL/cloud-operations-2627-homework-week-2-acorbesier-ucll).
-Design choices: [`docs/adr-0001-separate-config-repository.md`](docs/adr-0001-separate-config-repository.md).
+GenAI log: [`docs/genai-log.md`](docs/genai-log.md). Design choices: [`docs/adr-0001-separate-config-repository.md`](docs/adr-0001-separate-config-repository.md).
 
 ```text
 .
@@ -68,7 +68,7 @@ under "Observations".
 ### A. A bad tag in Git
 
 ```bash
-sed -i.bak 's/newTag: .*/newTag: does-not-exist/' apps/labqueue/overlays/dev/kustomization.yaml && rm apps/labqueue/overlays/dev/kustomization.yaml.bak
+sed -i '' 's/newTag: .*/newTag: does-not-exist/' apps/labqueue/overlays/dev/kustomization.yaml   # macOS sed
 git commit -am "Break it: bad tag" && git push
 kubectl -n argocd get applications -w
 kubectl -n labqueue get pods
@@ -105,6 +105,21 @@ kubectl -n argocd patch application labqueue-dev --type merge \
 kubectl -n labqueue delete service labqueue    # recreated by Argo CD
 kubectl -n labqueue get service labqueue -w
 ```
+
+### D. Delete a manifest from Git (prune)
+
+```bash
+git rm apps/labqueue/base/postgres-service.yaml
+sed -i '' '/postgres-service.yaml/d' apps/labqueue/base/kustomization.yaml   # macOS sed
+git commit -am "Break it: remove postgres Service" && git push
+kubectl -n argocd annotate application labqueue-dev argocd.argoproj.io/refresh=normal --overwrite
+kubectl -n labqueue get service -w        # the postgres Service disappears (prune)
+kubectl -n labqueue get pods              # the app loses its database: readiness fails
+git revert --no-edit HEAD && git push     # and it comes back
+```
+
+Expect: `prune: true` deletes the Service because it is no longer in Git. The app pods go `0/1 READY`
+(`/readyz` cannot reach `postgres`), the database pod itself keeps running. Why is `prune` dangerous when a path is wrong?
 
 ### Observations
 
