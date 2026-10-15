@@ -1,0 +1,5 @@
+.DS_Store
+# Secrets never go in this repository.
+*secret*.yaml
+kubeconfig*
+.env

@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: labqueue-dev
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/acorbesier-ucll/cloud-operations-2627-config-acorbesier-ucll.git
+    targetRevision: main
+    path: apps/labqueue/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: labqueue
+  syncPolicy:
+    automated:
+      prune: true      # delete what was removed from Git
+      selfHeal: true   # undo manual changes in the cluster
+    syncOptions:
+      - CreateNamespace=true

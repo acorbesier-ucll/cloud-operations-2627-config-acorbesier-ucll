@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  # Pinned release. Check https://github.com/argoproj/argo-cd/releases before bumping.
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.5.5/manifests/install.yaml
+# One 2 vCPU / 8 GB node holds everything: skip what this lab does not use (SSO, notifications).
+patches:
+  - target: { kind: Deployment, name: argocd-dex-server }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 0
+  - target: { kind: Deployment, name: argocd-notifications-controller }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 0

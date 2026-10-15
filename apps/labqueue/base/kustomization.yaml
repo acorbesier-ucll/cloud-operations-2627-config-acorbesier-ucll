@@ -1,0 +1,12 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# The namespace is created by the Argo CD Application (CreateNamespace=true).
+# The Secrets labqueue-db and ghcr-pull are NOT in Git: they are created by hand, see README.md.
+namespace: labqueue
+resources:
+  - configmap.yaml
+  - deployment.yaml
+  - service.yaml
+  - httproute.yaml
+  - postgres-service.yaml
+  - postgres-statefulset.yaml

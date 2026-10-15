@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+# A release = a one-line change here (the full commit SHA of a green CI run on main).
+images:
+  - name: ghcr.io/cloud-operations-ucll/cloud-operations-2627-homework-week-2-acorbesier-ucll
+    newTag: 4497cefaa6e7fabc1cff50be322cd90ad070a53e

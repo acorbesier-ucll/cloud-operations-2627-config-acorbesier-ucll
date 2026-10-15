@@ -1,0 +1,14 @@
+# Non-secret settings. DB_NAME, DB_USER and DB_PASSWORD come from the Secret labqueue-db.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: labqueue
+  namespace: labqueue
+  labels:
+    app.kubernetes.io/name: labqueue
+data:
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_SSL: "false"
+  PORT: "8080"
+  APP_TITLE: Lab Queue

@@ -1,0 +1,16 @@
+# ClusterIP only: reachable inside the cluster as postgres.labqueue.svc, never exposed.
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: labqueue
+  labels:
+    app.kubernetes.io/name: postgres
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: postgres
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
