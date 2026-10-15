@@ -5,4 +5,4 @@ resources:
 # A release = a one-line change here (the full commit SHA of a green CI run on main).
 images:
   - name: ghcr.io/cloud-operations-ucll/cloud-operations-2627-homework-week-2-acorbesier-ucll
-    newTag: does-not-exist
+    newTag: 4497cefaa6e7fabc1cff50be322cd90ad070a53e
