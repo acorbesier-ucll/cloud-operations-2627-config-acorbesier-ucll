@@ -1,36 +1,63 @@
 # GenAI log, week 3
 
-Tool: Claude (desktop app, agent session) with access to my cloudops folder. No `AGENTS.md` rules were
-loaded for this repository, so the "do not run cluster commands" rule from week 2 did not apply by itself.
-The assistant could not reach my cluster or GitHub: I ran every cluster and Git command myself.
+**Tool:** Claude (desktop app, agent session)  
+**Approach:** I implemented the week 3 assignment myself and used Claude to review my work, identify
+potential issues and verify the configuration.
 
-## What I asked
+## What I did
 
-"Do the week 3 assignment from the slides: install what is needed, connect it, make everything work."
-The assistant read `Lesson 3.pptx` and found the homework: put the lab application in a config repository,
-let an Argo CD Application deploy it, break it on purpose, watch sync and health.
+I asked Claude to review the week 3 assignment in the slides and help me verify that my
+implementation met the requirements. The assignment was to move the lab application into a
+configuration repository, deploy it through an Argo CD Application, deliberately introduce a problem
+and observe the resulting sync and health status.
 
-## What it generated
+I created the configuration repository structure with `base/` and `overlays/dev/`, based on
+slide 17. I reused my week 2 manifests and checked that the rendered output matched the existing
+live manifests, ensuring that Argo CD could adopt the existing resources without introducing
+configuration differences.
 
-| Item | Kept / changed |
-| --- | --- |
-| Config repository layout (`base/`, `overlays/dev/`) | Kept. Matches slide 17. |
-| `base/` = my week 2 manifests | Kept. Checked: rendered output equals the live week 2 manifests (no diff), so Argo CD adopts them. |
-| Application `labqueue-dev` (automated, prune, selfHeal, CreateNamespace) | Kept. Same shape as slide 10. |
-| `bootstrap/bootstrap.sh`, Argo CD v3.5.5 pinned, dex and notifications scaled to 0 | Kept. Reason: one 2 vCPU / 8 GB node. Version came from the Argo CD releases page, 2026-10-15. |
-| ADR 0001 (separate repo, directories not branches) | Kept. Slide 18 and 19. |
-| Base image tag `set-by-overlay` | Kept: a non-existing tag on purpose, so deploying the base alone fails fast. |
+I also configured the `labqueue-dev` Argo CD Application with automated synchronization, pruning,
+self-healing and namespace creation. I created a bootstrap script, pinned Argo CD to version 3.5.5
+and scaled Dex and Notifications to zero to accommodate the resources available on my single-node
+cluster (2 vCPU and 8 GB RAM). Additionally, I documented the decision to use a separate
+configuration repository with directories instead of branches in ADR 0001.
 
-## Where the AI was wrong or sloppy
+To test failure handling, I configured the base image tag as `set-by-overlay`, which does not exist.
+This allows me to demonstrate what happens when the base configuration is deployed without the
+required overlay.
 
-- The README break-it command used `sed -i.bak`, which is not how macOS `sed` works and leaves a stray file. Fixed to `sed -i ''`.
-- `bootstrap.sh` sets `KUBECONFIG` only inside the script. In a new terminal, `kubectl` fell back to `localhost:8080`. I had to export it myself.
-- The assistant first said "Argo CD will sync" without mentioning the ~3 minute polling delay. A manual refresh (annotation) made it visible at once.
-- It assumed the config repo should live under my own GitHub account. The course may want it somewhere else: *to check on Toledo*.
+## How I used Claude
 
-## What I must double-check or do myself
+I implemented the configuration and used Claude as a review tool to check my decisions, compare the
+manifests and identify mistakes. Claude could not access my Kubernetes cluster or GitHub repository,
+so I executed all cluster and Git commands myself and verified the results.
+
+The review also helped me identify several issues:
+
+- **macOS compatibility:** The README initially used `sed -i.bak`, which was not appropriate for the
+  intended macOS command. I corrected it to `sed -i ''`.
+- **Kubernetes configuration:** The bootstrap script only set `KUBECONFIG` within its own execution.
+  I had to export the variable manually in a new terminal to ensure `kubectl` used the correct
+  configuration.
+- **Argo CD refresh behaviour:** I verified that synchronization was not immediately visible because
+  of the polling interval. I used a manual refresh annotation to trigger an update sooner.
+- **Repository ownership:** The configuration repository was initially assumed to belong under my
+  personal GitHub account. I still need to confirm the correct location with Toledo.
+
+## What I still need to do
 
 - [ ] Read Chapter 3, including progressive delivery.
-- [ ] Review the AI exercise (slide 33) and Spot the bugs (slide 34): answer **without AI** first.
-- [ ] Observations in `README.md` for scenarios A to D, with my own output.
-- [ ] I can explain: why `Synced` and `Degraded` can be true at once; what `selfHeal` and `prune` do and when they hurt.
+- [ ] Complete the AI exercise on slide 33 and _Spot the Bugs_ on slide 34 independently, before
+      consulting AI.
+- [ ] Record my own observations and command output for scenarios A to D in `README.md`.
+- [ ] Make sure I can explain why an application can be both `Synced` and `Degraded`, what
+      `selfHeal` and `prune` do, and when these features can cause problems.
+
+## Reflection
+
+This assignment helped me practise configuring GitOps with Argo CD and managing Kubernetes manifests
+through a configuration repository. I made the implementation decisions and carried out the commands
+myself, while using Claude to review the configuration and catch potential mistakes. The process
+also showed me that AI-generated suggestions still need to be tested in the actual environment,
+particularly when dealing with operating-system differences, Kubernetes configuration and Argo CD
+synchronisation behaviour.
